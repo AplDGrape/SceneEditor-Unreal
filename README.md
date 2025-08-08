@@ -14,6 +14,7 @@ How to Run:
 1. Open using Visual Studio 2019 or 2022
 2. Starting class is main.cpp in the App folder
 3. Press Run/Debug to run the program
+4. Save a scene
 
 ---------------------------------------
 
