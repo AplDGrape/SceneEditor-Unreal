@@ -28,7 +28,7 @@ void ASceneLoader::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FString FilePath = FPaths::ProjectContentDir() + TEXT("Scenes/ExamTestingScene.xml");
+	FString FilePath = FPaths::ProjectContentDir() + TEXT("Scenes/Quiz2Physics.xml");
 	std::string StdPath = TCHAR_TO_UTF8(*FilePath);
 
 	XMLDocument doc;
@@ -64,8 +64,8 @@ void ASceneLoader::BeginPlay()
 
 		FVector Position = GetVectorFromElement(obj->FirstChildElement("Position")) * PositionScale;
 
-		if (Position.Z < 50.0f)
-			Position.Z = 50.0f;
+		/*if (Position.Z < 50.0f)
+			Position.Z = 50.0f;*/
 
 		FVector Scale = GetVectorFromElement(obj->FirstChildElement("Scale"));
 		FVector RotationVec = GetVectorFromElement(obj->FirstChildElement("Rotation")) * RotationScale;
@@ -82,12 +82,22 @@ void ASceneLoader::BeginPlay()
 		//FQuat FinalQuat = GlobalQuat * LocalQuat; // Order matters: global * local
 		//FRotator FinalRotation = FinalQuat.Rotator();
 
+		bool bSimulatePhysics = false;
+		XMLElement* rbElement = obj->FirstChildElement("RigidBody");
+		if (rbElement && FString(rbElement->GetText()) == "1")
+		{
+			bSimulatePhysics = true;
+		}
+
 		TSubclassOf<AActor> SelectedClass = nullptr;
 		switch (Type)
 		{
 		case 2: SelectedClass = CubeActor; break;
 		case 3: SelectedClass = PlaneActor; break;
 		case 4: SelectedClass = SphereActor; break;
+		case 5: SelectedClass = CapsuleActor; break;
+		case 7: SelectedClass = PhysicsCubeActor; break;
+		case 8: SelectedClass = PhysicsPlaneActor; break;
 		default:
 			UE_LOG(LogTemp, Warning, TEXT("Unknown type %d for %s"), Type, *FString(Name));
 			continue;
@@ -101,6 +111,29 @@ void ASceneLoader::BeginPlay()
 			if (Spawned)
 			{
 				Spawned->SetActorScale3D(Scale);
+
+				if (bSimulatePhysics)
+				{
+					UStaticMeshComponent* MeshComp = Cast<UStaticMeshComponent>(Spawned->GetComponentByClass(UStaticMeshComponent::StaticClass()));
+					if (MeshComp)
+					{
+						MeshComp->SetSimulatePhysics(true);
+						MeshComp->SetEnableGravity(true);
+					}
+				}
+
+				// Check if name starts with "Physics" to enable physics simulation
+				FString ObjectName = FString(Name);
+				if (ObjectName.StartsWith(TEXT("Physics")))
+				{
+					UStaticMeshComponent* MeshComp = Cast<UStaticMeshComponent>(Spawned->GetComponentByClass(UStaticMeshComponent::StaticClass()));
+					if (MeshComp)
+					{
+						MeshComp->SetSimulatePhysics(true);
+						MeshComp->SetNotifyRigidBodyCollision(true);
+					}
+				}
+
 				UE_LOG(LogTemp, Warning, TEXT("Spawned %s at (%f, %f, %f) with scale (%f, %f, %f)"),
 					*FString(Name),
 					Position.X, Position.Y, Position.Z,

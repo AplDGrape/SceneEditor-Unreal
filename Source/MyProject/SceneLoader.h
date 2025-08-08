@@ -31,4 +31,13 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Scene")
 	TSubclassOf<AActor> PlaneActor;
+
+	UPROPERTY(EditAnywhere, Category = "Scene")
+	TSubclassOf<AActor> CapsuleActor;
+
+	UPROPERTY(EditAnywhere, Category = "Scene")
+	TSubclassOf<AActor> PhysicsCubeActor;
+
+	UPROPERTY(EditAnywhere, Category = "Scene")
+	TSubclassOf<AActor> PhysicsPlaneActor;
 };
